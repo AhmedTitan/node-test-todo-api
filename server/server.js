@@ -15,8 +15,8 @@ app.post('/todos',(req, res) =>{
 
     newTodo.save().then((doc) => {
         res.send({
-            text: 'Data saved.',
-            doc
+            message: 'Data saved.',
+            doc: doc
         });
     }, (err) => {
         res.status(400).send('Unable to save the data.')
