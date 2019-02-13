@@ -14,9 +14,23 @@ app.post('/todos',(req, res) =>{
     });
 
     newTodo.save().then((doc) => {
-        res.send(doc);
+        res.send({
+            text: 'Data saved.',
+            doc
+        });
     }, (err) => {
         res.status(400).send('Unable to save the data.')
+    });
+});
+
+app.get('/todos', (req, res) => {
+    Todo.find().then((todos) => {
+        res.send({
+            number_of_todos: todos.length,
+            todos
+        })
+    }, (err) => {
+        res.status(400).send(err);
     });
 });
 
