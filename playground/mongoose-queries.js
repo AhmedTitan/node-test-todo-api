@@ -2,10 +2,11 @@ const {ObjectID} = require('mongodb');
 
 const {mongoose} = require('./../server/db/mongoose');
 const {Todo} = require('./../server/models/todo');
+const {User} = require('./../server/models/user');
 
-var id = '5c67ab5cba0f46081830c5e711';
-if(!ObjectID.isValid(id))
-    return console.log('Invald ID.');
+var id = '5c624ef498b636278cd28b2a11';
+// if(!ObjectID.isValid(id))
+//     return console.log('Invald ID.');
 
 // Todo.find({
 //     _id: id
@@ -19,11 +20,20 @@ if(!ObjectID.isValid(id))
 //     console.log('Todo: ',todo);
 // });
 
-Todo.findById(id).then((todo) => {
-    if(!todo)
-        return console.log('Id not found');
-    console.log('Todo by id:', todo);
-}).catch((e) => console.log(e.message));
+// Todo.findById(id).then((todo) => {
+//     if(!todo)
+//         return console.log('Id not found');
+//     console.log('Todo by id:', todo);
+// }).catch((e) => console.log(e.message));
+
+User.findById(id).then((doc) => {
+    if(!doc)
+        return console.log('Data not found.');
+    console.log(doc);
+}, (err) => {
+    console.log('invalid input.',err.message);
+});
+
 
 //To discover more queries visit this page
 // https://mongoosejs.com/docs/queries.html

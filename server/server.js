@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const {ObjectID} = require('mongodb');
 
 var {mongoose} = require('./db/mongoose');
 var {Todo} = require('./models/todo');
@@ -34,6 +35,18 @@ app.get('/todos', (req, res) => {
     });
 });
 
+app.get('/todos/:id', (req, res) => {
+    var id = req.params.id;
+    if(!ObjectID.isValid(id))
+        return res.status(404).send({message: 'Invalid ID'});
+    Todo.findById(id).then((doc) => {
+        if(!doc)
+            return res.status(404).send({message: 'Data not found'});
+        res.send({doc});
+    }, (err) => {
+        res.status(400).send({message: 'invalid parameter'});
+    });
+});
 
 app.listen(3000, ()=> console.log('Server is running on port 3000'));
 
