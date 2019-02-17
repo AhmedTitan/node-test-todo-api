@@ -41,12 +41,29 @@ app.get('/todos/:id', (req, res) => {
     var id = req.params.id;
     if(!ObjectID.isValid(id))
         return res.status(404).send({message: 'Invalid ID'});
+    
     Todo.findById(id).then((doc) => {
         if(!doc)
             return res.status(404).send({message: 'Data not found'});
         res.send({doc});
     }, (err) => {
         res.status(400).send({message: 'invalid parameter'});
+    });
+});
+
+app.delete('/todos/:id', (req, res) => {
+    var id = req.params.id;
+    if(!ObjectID.isValid(id))
+        return res.status(404).send({message: 'Invalid ID'});
+    
+    Todo.findByIdAndRemove(id).then((result) => {
+        if(!result)
+            return res.status(404).send({message: 'Data not found'});
+        res.send({
+            message: "Data deleted.",
+            result});
+    }, (err) => {
+        res.status(404).send({message: 'Invalid parameter'});
     });
 });
 
