@@ -5,6 +5,7 @@ const {app} = require('./../server');
 const {Todo} = require('./../models/todo');
 
 var todos = [{
+    _id: '5c691dca1eaad02b182e5f8d',
     text: 'first test todo'
 },{
     text: 'second test todo'
@@ -64,6 +65,33 @@ describe('GET /todos', () => {
             .get('/todos')
             .expect(200)
             .expect((res) => expect(res.body.todos.length).toBe(2))
+            .end(done);
+    });
+});
+
+describe('GET /todos/:id', () => {
+    it('should return 404 error for invalid id', (done) => {
+        request(app)
+            .get('/todos/5c67ab5cba0f46081830c5e611')
+            .expect(404)
+            .expect((res) => expect(res.body.message).toBe('Invalid ID'))
+            .end(done);
+    });
+    it('should return 404 error for no data found', (done) => {
+        request(app)
+            .get('/todos/5c67ab5cba0f46081830c5a9')
+            .expect(404)
+            .expect((res) => expect(res.body.message).toBe('Data not found'))
+            .end(done);
+    });
+    it('should return the data', (done) => {
+        request(app)
+            .get('/todos/5c691dca1eaad02b182e5f8d')
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.doc._id).toBe('5c691dca1eaad02b182e5f8d');
+                expect(res.body.doc.text).toBe('first test todo');
+            })
             .end(done);
     });
 });
