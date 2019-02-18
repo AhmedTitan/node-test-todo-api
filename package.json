@@ -7,7 +7,7 @@
     "start": "node server/server.js",
     "test": "mocha server/**/*.test.js"
   },
-  "engines":{
+  "engines": {
     "node": "11.0.0"
   },
   "author": "",
@@ -15,6 +15,7 @@
   "dependencies": {
     "body-parser": "^1.18.3",
     "express": "^4.16.0",
+    "lodash": "^4.17.11",
     "mongodb": "^3.1.13",
     "mongoose": "^5.4.11",
     "yargs": "^12.0.5"

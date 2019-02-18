@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const express = require('express');
 const bodyParser = require('body-parser');
 const {ObjectID} = require('mongodb');
@@ -65,6 +66,38 @@ app.delete('/todos/:id', (req, res) => {
     }, (err) => {
         res.status(404).send({message: 'Invalid parameter'});
     });
+});
+
+app.patch('/todos/:id', (req, res) => {
+    var id = req.params.id;
+    // var body = {
+    //     text: req.body.text,
+    //     completed: req.body.completed            // in this method if the text is not recieved from the user. it will set to null that is why we used the method below(_.pick)
+    // };
+
+    var body = _.pick(req.body, ['text', 'completed']);  //using this _.pick method to get value if it is there in the body. if not the varialbe will not be set in the body.
+
+    if(!ObjectID.isValid(id)){
+        return res.status(404).send({message: 'Invalid ID'});
+    }
+
+    if(typeof body.completed === 'boolean' && body.completed){
+        body.completedAt = new Date().getTime();
+    }
+    else{
+        body.completed = false;
+        body.completedAt = null;
+    }
+
+    Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then((result) => {
+        if(!result){
+            return res.status(404).send({message: 'Data not found'});
+        }
+        res.send({
+            message: "Updated successfully",
+            result});
+    }).catch((e) => res.status(400).send({message:"invalid parameter"}));
+
 });
 
 app.listen(port, ()=> console.log(`Server is running on port ${port}`));
