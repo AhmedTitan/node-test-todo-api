@@ -76,9 +76,12 @@ app.patch('/todos/:id', (req, res) => {
     // };
 
     var body = _.pick(req.body, ['text', 'completed']);  //using this _.pick method to get value if it is there in the body. if not the varialbe will not be set in the body.
-
+    
     if(!ObjectID.isValid(id)){
         return res.status(404).send({message: 'Invalid ID'});
+    }
+    if(body.completed === undefined && body.text === undefined){
+        return res.status(404).send({message: 'No data recieved'});
     }
 
     if(typeof body.completed === 'boolean' && body.completed){
@@ -95,7 +98,8 @@ app.patch('/todos/:id', (req, res) => {
         }
         res.send({
             message: "Updated successfully",
-            result});
+            result
+        });
     }).catch((e) => res.status(400).send({message:"invalid parameter"}));
 
 });
