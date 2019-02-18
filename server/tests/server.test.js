@@ -95,3 +95,39 @@ describe('GET /todos/:id', () => {
             .end(done);
     });
 });
+
+describe('DELETE /todos/id:', () =>{
+    it('should delete the item', (done) => {
+        request(app)
+            .delete(`/todos/5c691dca1eaad02b182e5f8d`)
+            .expect(200)
+            .expect((doc) => {
+                expect(doc.body.message).toBe("Data deleted.");
+                expect(doc.body.result._id).toBe('5c691dca1eaad02b182e5f8d');
+            })
+            .end((err, res) => {
+                if(err){
+                    return done(err);
+                }
+                
+                Todo.findById('5c691dca1eaad02b182e5f8d').then((doc) => {
+                    expect(doc).toBeFalsy();
+                    done();
+                }).catch((err) => done(err));
+            });
+    });
+    it('should return 404 error for invalid id', (done) => {
+        request(app)
+            .delete(`/todos/asd123`)
+            .expect(404)
+            .expect((doc) => expect(doc.body.message).toBe('Invalid ID'))
+            .end(done);
+    });
+    it('should return 404 error for id not found', (done) => {
+        request(app)
+            .delete(`/todos/6c691dca1eaad02b182e5f8d`)
+            .expect(404)
+            .expect((doc) => expect(doc.body.message).toBe('Data not found'))
+            .end(done);
+    });
+});
