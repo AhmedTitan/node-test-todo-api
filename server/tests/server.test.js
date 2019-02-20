@@ -1,3 +1,5 @@
+var env = process.env.NODE_ENV;
+
 const expect = require('expect');
 const request = require('supertest');
 const {ObjectID} = require('mongodb');
@@ -17,14 +19,15 @@ var todos = [{
 
 beforeEach((done) => {
     Todo.remove({}).then(() => {
-        return Todo.insertMany(todos);
+        Todo.insertMany(todos);
     }).then(() => done());
 });
 
-describe('POST /todos ', () => {
-    it('should create a new todo', (done) => {
+describe('POST /todos ', function () {
+    it('should create a new todo', function (done) {
+        this.timeout(5000);
+        setTimeout(done, 3000);
         var text = 'new test todo';
-
         request(app)
             .post('/todos')
             .send({text})
