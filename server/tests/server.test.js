@@ -6,27 +6,16 @@ const {ObjectID} = require('mongodb');
 
 const {app} = require('./../server');
 const {Todo} = require('./../models/todo');
+const {User} = require('./../models/user');
+const {todos, populateTodos, users, populateUser} = require('./seed/seed');
 
-var todos = [{
-    _id: '5c691dca1eaad02b182e5f8d',
-    text: 'first test todo'
-},{
-    _id: new ObjectID(),
-    text: 'second test todo',
-    completed: true,
-    completedAt: 333
-}];
+beforeEach(populateUser);
+beforeEach(populateTodos);
 
-beforeEach((done) => {
-    Todo.remove({}).then(() => {
-        Todo.insertMany(todos);
-    }).then(() => done());
-});
 
 describe('POST /todos ', function () {
     it('should create a new todo', function (done) {
-        this.timeout(5000);
-        setTimeout(done, 3000);
+        this.timeout(10000);
         var text = 'new test todo';
         request(app)
             .post('/todos')
@@ -52,12 +41,13 @@ describe('POST /todos ', function () {
             .post('/todos')
             .send({})
             .expect(400)
-            //.expect((res) => expect(res.text).toBe('Unable to save the data.'))
+            .expect((res) => expect(res.text).toBe('Unable to save the data.'))
             .end((err, res) => {
-                if(err)
+                if(err){
                     return done(err);
+                }
                 
-                Todo.find().then((todos) => {
+                Todo.find({}).then((todos) => {
                     expect(todos.length).toBe(2);
                     done();
                 }).catch((e) => done(e));
@@ -220,5 +210,91 @@ describe('PATCH /todos/:id', () => {
                 expect(doc.body.message).toBe('No data recieved');
             })
             .end(done)
+    });
+});
+
+describe('GET /usres/me', () => {
+    it('should return user if authenticated', (done) => {
+        request(app)
+            .get('/users/me')
+            .set('x-auth', users[0].tokens[0].token)
+            .expect(200)
+            .expect((res) => {
+                expect(res.body._id).toBe(users[0]._id.toHexString());
+                expect(res.body.email).toBe(users[0].email);
+            })
+            .end(done);
+    });
+    it('should return 401 if not authenticated (without header)', (done) => {
+        request(app)
+            .get('/users/me')
+            .expect(401)
+            .expect((res) => {
+                expect(res.body).toEqual({});
+            })
+            .end(done)         
+    });
+    it('should return 401 if not authenticated (with invalid header)', (done) => {
+        request(app)
+            .get('/users/me')
+            .set('x-auth', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1YzZkODRlNGU1OGFhZjE3NDgyOTFlYTciLCJhY2Nlc3MiOiJhdXRoIiwiaWF0IjoxNTUwNjgxMzE2fQ.24ppIq-UqnKad88GZV-FgsEBwCRebw7QaAOAlUa2-HQ')
+            .expect(401)
+            .expect((res) => {
+                expect(res.body).toEqual({});   
+            })  
+            .end(done)    
+    });
+});
+
+describe('POST /users', function () {
+    it('should create a user', function (done) {
+        var newUser = {
+            email: "zebra@animal.com",
+	        password: "animal1233"
+        };
+        request(app)
+            .post(`/users`)
+            .send(newUser)
+            .expect(200)
+            .expect((res) => {
+                expect(res.header['x-auth']).toExist;
+                expect(res.body._id).toExist;
+                expect(res.body.email).toBe(newUser.email);
+            })
+            .end((err) => {
+                if(err){
+                    return done(err);
+                }
+                User.findOne({'email': newUser.email}).then((user) => {
+                    expect(user).toExist;
+                    expect(user.password).not.toBe(newUser.password);
+                    done();
+                });
+            });
+    });
+    it('should return validation error if request invalid', (done) => {
+        var newUser = {
+            email: "zebra@animal.com",
+	        password: "ani"
+        };
+        request(app)
+            .post('/users')
+            .send(newUser)
+            .expect(400)
+            .expect((res) => {
+                expect(res.body.message).toBe('Unable to save the data');
+            })
+            .end(done);
+    });
+    it('should not ceate a user if email is in use', (done) => {
+        var newUser = {
+            email : users[0].email,
+            password: '12345678'
+        }
+        request(app)
+            .post('/users')
+            .send(newUser)
+            .expect(400)
+            .end(done);
     });
 });
