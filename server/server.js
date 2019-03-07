@@ -142,6 +142,14 @@ app.post('/users/login', (req, res) => {
     });    
 });
 
+app.delete('/users/me/token', authenticate, (req, res) => {
+    req.user.removeToken(req.token).then(() => {
+        res.send({message: 'loged out.'});
+    }, () => {
+        res.status(401).send({message: 'unauthorized access'});
+    });
+});
+
 app.listen(port, ()=> console.log(`Server is running on port ${port}`));
 
 module.exports = {app};
