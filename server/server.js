@@ -17,9 +17,10 @@ const port = process.env.PORT;
 app.use(bodyParser.json());
 
 //------------TODO ROUTS ---------------
-app.post('/todos',(req, res) =>{
+app.post('/todos', authenticate, (req, res) =>{
     var newTodo = new Todo({
-        text: req.body.text
+        text: req.body.text,
+        _creator: req.user._id
     });
 
     newTodo.save().then((doc) => {
@@ -32,8 +33,8 @@ app.post('/todos',(req, res) =>{
     });
 });
 
-app.get('/todos', (req, res) => {
-    Todo.find().then((todos) => {
+app.get('/todos', authenticate, (req, res) => {
+    Todo.find({_creator: req.user._id}).then((todos) => {
         res.send({
             number_of_todos: todos.length,
             todos
@@ -43,12 +44,15 @@ app.get('/todos', (req, res) => {
     });
 });
 
-app.get('/todos/:id', (req, res) => {
+app.get('/todos/:id', authenticate, (req, res) => {
     var id = req.params.id;
     if(!ObjectID.isValid(id))
         return res.status(404).send({message: 'Invalid ID'});
     
-    Todo.findById(id).then((doc) => {
+    Todo.findOne({
+        _id: id,
+        _creator: req.user._id
+    }).then((doc) => {
         if(!doc)
             return res.status(404).send({message: 'Data not found'});
         res.send({doc});
@@ -57,12 +61,15 @@ app.get('/todos/:id', (req, res) => {
     });
 });
 
-app.delete('/todos/:id', (req, res) => {
+app.delete('/todos/:id', authenticate, (req, res) => {
     var id = req.params.id;
     if(!ObjectID.isValid(id))
         return res.status(404).send({message: 'Invalid ID'});
     
-    Todo.findByIdAndDelete(id).then((result) => {
+    Todo.findOneAndDelete({
+        _id : id,
+        _creator: req.user._id
+    }).then((result) => {
         if(!result)
             return res.status(404).send({message: 'Data not found'});
         res.send({
@@ -73,7 +80,7 @@ app.delete('/todos/:id', (req, res) => {
     });
 });
 
-app.patch('/todos/:id', (req, res) => {
+app.patch('/todos/:id', authenticate, (req, res) => {
     var id = req.params.id;
     // var body = {
     //     text: req.body.text,
@@ -97,7 +104,7 @@ app.patch('/todos/:id', (req, res) => {
         body.completedAt = null;
     }
 
-    Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then((result) => {
+    Todo.findOneAndUpdate({_id: id, _creator: req.user._id}, {$set: body}, {new: true}).then((result) => {
         if(!result){
             return res.status(404).send({message: 'Data not found'});
         }

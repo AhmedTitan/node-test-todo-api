@@ -17,17 +17,23 @@ var users = [{
 }, {
     _id: userTwoId,
     email: 'zxcvb@nml.com',
-    password: 'zxcvbnpass'
+    password: 'zxcvbnpass',
+    tokens: [{
+        access: 'auth',
+        token: jwt.sign({_id: userTwoId, access: 'auth'}, 'abc123').toString()
+    }]   
 }];
 
 var todos = [{
     _id: '5c691dca1eaad02b182e5f8d',
-    text: 'first test todo'
+    text: 'first test todo',
+    _creator: userOneId
 },{
     _id: new ObjectID(),
     text: 'second test todo',
     completed: true,
-    completedAt: 333
+    completedAt: 333,
+    _creator: userTwoId
 }];
 
 var populateTodos = function (done) {
